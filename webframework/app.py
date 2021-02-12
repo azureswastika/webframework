@@ -1,19 +1,7 @@
 from wsgiref.simple_server import WSGIRequestHandler, WSGIServer
 
-from jinja2 import Template
-
-
-class BaseView:
-    route = None
-    template = None
-
-    def __call__(self, request, *args, **kwargs):
-        with open(self.template, encoding="utf-8") as f:
-            template = Template(f.read())
-            template = [
-                line.encode("utf-8") for line in template.render(**request).split("\n")
-            ]
-        return "200 OK", template
+from .views import BaseView
+from .middleware import user
 
 
 class PathDescriptor:
@@ -33,6 +21,7 @@ class Application:
 
     def __init__(self, ip="", port=8000) -> None:
         self.routes = dict([(view.route, view) for view in BaseView.__subclasses__()])
+        self.middleware = [user]
 
         self.server = WSGIServer((ip, port), WSGIRequestHandler)
         self.server.set_app(self.__call__)
@@ -45,6 +34,8 @@ class Application:
         else:
             view = error_404
         request = {}
+        for middleware in self.middleware:
+            middleware(request)
         code, body = view(request)
         start_response(code, [("Content-Type", "text/html")])
 
@@ -52,4 +43,4 @@ class Application:
 
 
 def error_404(request):
-    return "404 Not Found", [b"404 Page Not Found"]
+    return "404 Not Found", [b'<h1>404 Page Not Found</h1>']
