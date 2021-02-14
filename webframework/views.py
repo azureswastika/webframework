@@ -14,7 +14,7 @@ class TemplateView(BaseView):
 
     def __call__(self, request: str, *args, **kwargs) -> tuple:
         if request.get("method") == "GET":
-            return "200 OK", [self.get(request).encode("utf-8")]
+            return "200 OK", self.get(request)
         return error_405()()
 
 
@@ -24,7 +24,7 @@ class View(TemplateView):
 
     def __call__(self, request: str, *args, **kwargs) -> tuple:
         if request.get("method") == "GET":
-            return "200 OK", [self.get(request).encode("utf-8")]
+            return "200 OK", self.get(request)
         elif request.get("method") == "POST":
-            return "200 OK", [self.post(request).encode("utf-8")]
+            return "201 Created", self.post(request)
         return error_405()()
