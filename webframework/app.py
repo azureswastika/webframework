@@ -1,27 +1,18 @@
+from typing import Callable
 from wsgiref.simple_server import WSGIRequestHandler, WSGIServer
 
+from .errors import error_404
+from .middleware import BaseMiddleware
+from .tools import PathDescriptor
 from .views import BaseView
-from .middleware import user
-
-
-class PathDescriptor:
-    def __set__(self, obj, value: str):
-        if not value.startswith("/"):
-            value = "/" + value
-        if not value.endswith("/"):
-            value = value + "/"
-        obj.__dict__[self.name] = value
-
-    def __set_name__(self, owner, name):
-        self.name = name
 
 
 class Application:
     path = PathDescriptor()
 
-    def __init__(self, ip="", port=8000) -> None:
-        self.routes = dict([(view.route, view) for view in BaseView.__subclasses__()])
-        self.middleware = [user]
+    def __init__(self, ip: str = "", port: int = 8000) -> None:
+        self.routes = BaseView.routes()
+        self.middleware = [middleware for middleware in BaseMiddleware.__subclasses__()]
         try:
             self.server = WSGIServer((ip, port), WSGIRequestHandler)
             self.server.set_app(self.__call__)
@@ -29,20 +20,16 @@ class Application:
         except (OSError, NameError):
             pass
 
-    def __call__(self, environ, start_response):
-        self.path = environ["PATH_INFO"]
-        if self.path in self.routes:
-            view = self.routes[self.path]()
-        else:
-            view = error_404
+    def __call__(self, environ: dict, start_response: Callable):
+        return self.wsgi(environ, start_response)
+
+    def wsgi(self, environ: dict, start_response: Callable):
+        self.path = environ.get("PATH_INFO")
+        view = self.routes.get(self.path, error_404)()
         request = {}
         for middleware in self.middleware:
-            middleware(request)
+            middleware()(request, environ)
         code, body = view(request)
         start_response(code, [("Content-Type", "text/html")])
 
         return body
-
-
-def error_404(request):
-    return "404 Not Found", [b'<h1>404 Page Not Found</h1>']
