@@ -3,16 +3,17 @@ from wsgiref.simple_server import WSGIRequestHandler, WSGIServer
 
 from .errors import error_404
 from .middleware import BaseMiddleware
-from .tools import PathDescriptor
-from .views import BaseView
+from .tools import PathDescriptor, ViewMetaclass
 
 
 class Application:
     path = PathDescriptor()
 
     def __init__(self, ip: str = "", port: int = 8000) -> None:
-        self.routes = BaseView.routes()
-        self.middleware = [middleware for middleware in BaseMiddleware.__subclasses__()]
+        self.routes = ViewMetaclass._routes
+        self.middleware = [
+            middleware for middleware in BaseMiddleware.__subclasses__()
+        ]  # TODO: Fix middleware listing
         try:
             self.server = WSGIServer((ip, port), WSGIRequestHandler)
             self.server.set_app(self.__call__)
