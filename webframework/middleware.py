@@ -1,4 +1,7 @@
+from typing import Union
 from urllib.parse import parse_qsl
+
+from .tools import HttpQuery
 
 
 class BaseMiddleware:
@@ -11,16 +14,20 @@ class RequestMethod(BaseMiddleware):
     def __call__(self, request: dict, environ: dict, *args, **kwargs):
         method = environ.get("REQUEST_METHOD")
         if method == "GET":
-            request.update(self.parse_get_query(environ.get("QUERY_STRING")))
+            request["GET"] = self.parse_get_query(environ)
         elif method == "POST":
-            request.update(self.parse_post_query(environ))
+            request["POST"] = self.parse_post_query(environ)
         request["method"] = method
 
-    def parse_post_query(self, environ: dict) -> dict:
+    def parse_post_query(self, environ: dict) -> Union[HttpQuery, None]:
         length = int(environ.get("CONTENT_LENGTH", "0"))
-        return dict(
+        data = dict(
             parse_qsl(environ.get("wsgi.input", b"").read(length).decode(), True)
         )
+        if data != dict():
+            return HttpQuery(**data)
 
-    def parse_get_query(self, data: str) -> dict:
-        return dict(parse_qsl(data))
+    def parse_get_query(self, environ: dict) -> Union[HttpQuery, None]:
+        data = dict(parse_qsl(environ.get("QUERY_STRING")))
+        if data != dict():
+            return HttpQuery(**data)

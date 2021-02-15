@@ -9,7 +9,7 @@ from .tools import PathDescriptor, ViewMetaclass
 class Application:
     path = PathDescriptor()
 
-    def __init__(self, ip: str = str(), port: int = 8000) -> None:
+    def __init__(self, ip: str = "", port: int = 8000) -> None:
         self.ip = ip
         self.port = port
         self.routes = ViewMetaclass._routes
