@@ -1,3 +1,3 @@
-from .app import Application, BaseView
+from .app import Application
 
 __version__ = "0.0.1"
