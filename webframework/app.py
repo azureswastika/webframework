@@ -29,11 +29,10 @@ class Application:
 
     def wsgi(self, environ: dict, start_response: Callable):
         self.path = environ.get("PATH_INFO")
-        view = self.routes.get(self.path, error_404)()
         request = {"path": self.path}
         for middleware in self.middleware:
             middleware()(request, environ)
-        code, body = view(request)
-        start_response(code, [("Content-Type", "text/html")])
+        view = self.routes.get(self.path, error_404)()
+        body = view(start_response, request)
 
         return [body.encode("utf-8")]
