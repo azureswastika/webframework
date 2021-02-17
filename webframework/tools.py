@@ -1,6 +1,7 @@
 from typing import Any
 
-from jinja2 import Template
+from jinja2.environment import Environment
+from jinja2.loaders import FileSystemLoader
 
 
 class ViewMetaclass(type):
@@ -52,7 +53,8 @@ class HttpQuery:
         return self.__dict__.get(name)
 
 
-def render(path: str, context: dict, *args, **kwargs) -> str:
-    with open(path, encoding="utf-8") as f:
-        template = Template(f.read())
-        return template.render(**context)
+def render(template_name: str, context: dict, templates="templates", *args, **kwargs) -> str:
+    env = Environment()
+    env.loader = FileSystemLoader(templates)
+    template = env.get_template(template_name)
+    return template.render(**context)
