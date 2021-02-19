@@ -33,6 +33,6 @@ class Application:
         for middleware in self.middleware:
             middleware()(request, environ)
         view = self.routes.get(self.path, error_404)()
-        body = view(start_response, request)
-
+        body, code, headers = view(request)
+        start_response(code, headers)
         return [body.encode("utf-8")]

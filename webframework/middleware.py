@@ -5,12 +5,10 @@ from .tools import HttpQuery
 
 
 class BaseMiddleware:
-    alias = None
+    """Base Middleware"""
 
 
 class RequestMethod(BaseMiddleware):
-    alias = "RequestMethod"
-
     def __call__(self, request: dict, environ: dict, *args, **kwargs):
         method = environ.get("REQUEST_METHOD")
         if method == "GET":
