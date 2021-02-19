@@ -22,7 +22,7 @@ class TemplateView(BaseView):
 
 class View(TemplateView):
     def post(self, request: str):
-        return render(self.template, request)
+        """Post request"""
 
     def __call__(self, start_response: Callable, request: str, *args, **kwargs) -> tuple:
         if request.get("method") == "GET":

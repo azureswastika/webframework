@@ -6,6 +6,7 @@ from jinja2.loaders import FileSystemLoader
 
 class ViewMetaclass(type):
     _routes = {}
+    _alias = {}
 
     def __new__(cls, clsname, bases, dct):
         def process_path(path: str):
@@ -21,6 +22,7 @@ class ViewMetaclass(type):
                 cls._routes[path] = super(ViewMetaclass, cls).__new__(
                     cls, clsname, bases, dct
                 )
+                cls._alias[clsname] = path
                 dct["route"] = path
                 return
             elif isinstance(path, list):
@@ -29,6 +31,7 @@ class ViewMetaclass(type):
                     cls._routes[el] = super(ViewMetaclass, cls).__new__(
                         cls, clsname, bases, dct
                     )
+                    cls._alias[clsname] = el
                 dct["route"] = path
                 return
         return super(ViewMetaclass, cls).__new__(cls, clsname, bases, dct)
@@ -53,8 +56,14 @@ class HttpQuery:
         return self.__dict__.get(name)
 
 
-def render(template_name: str, context: dict, templates="templates", *args, **kwargs) -> str:
+def render(
+    template_name: str, context: dict, templates="templates", *args, **kwargs
+) -> str:
     env = Environment()
     env.loader = FileSystemLoader(templates)
     template = env.get_template(template_name)
     return template.render(**context)
+
+
+def reverse(name: str):
+    return ViewMetaclass._alias.get(name)
