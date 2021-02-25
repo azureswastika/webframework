@@ -9,20 +9,20 @@ class BaseView(metaclass=ViewMetaclass):
 class TemplateView(BaseView):
     template = None
 
-    def get(self, request: str):
+    def get(self, request: dict):
         return render(self.template, request)
 
-    def __call__(self, request: str, *args, **kwargs) -> tuple:
+    def __call__(self, request: dict, *args, **kwargs) -> tuple:
         if request.get("method") == "GET":
             return self.get(request), "200 OK", [("Content-Type", "text/html")]
         return error_405()()
 
 
 class View(TemplateView):
-    def post(self, request: str):
+    def post(self, request: dict):
         """Post request"""
 
-    def __call__(self, request: str, *args, **kwargs) -> tuple:
+    def __call__(self, request: dict, *args, **kwargs) -> tuple:
         if request.get("method") == "GET":
             return self.get(request), "200 OK", [("Content-Type", "text/html")]
         elif request.get("method") == "POST":

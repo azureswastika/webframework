@@ -57,7 +57,7 @@ class HttpQuery:
 
 
 def render(
-    template_name: str, request: dict, context: dict, templates="templates", *args, **kwargs
+    template_name: str, request: dict, context: dict = {}, templates="templates", *args, **kwargs
 ) -> str:
     env = Environment()
     env.loader = FileSystemLoader(templates)
