@@ -57,12 +57,12 @@ class HttpQuery:
 
 
 def render(
-    template_name: str, context: dict, templates="templates", *args, **kwargs
+    template_name: str, request: dict, context: dict, templates="templates", *args, **kwargs
 ) -> str:
     env = Environment()
     env.loader = FileSystemLoader(templates)
     template = env.get_template(template_name)
-    return template.render(**context)
+    return template.render(**request, **context)
 
 
 def reverse(name: str):

@@ -1,4 +1,3 @@
-from typing import Callable
 from .errors import error_405
 from .tools import ViewMetaclass, render
 
