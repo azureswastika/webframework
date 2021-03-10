@@ -12,5 +12,6 @@ setup(
     name="webframework",
     version=version,
     packages=["webframework"],
-    install_requires=['Jinja2>=2.11.3'],
-    python_requires=">=3.6",)
+    install_requires=["Jinja2>=2.11.3"],
+    python_requires=">=3.6",
+)

@@ -4,9 +4,18 @@ from jinja2.environment import Environment
 from jinja2.loaders import FileSystemLoader
 
 
+class MiddlewareMetaclass(type):
+    _middleware = list()
+
+    def __new__(cls, clsname, bases, dct):
+        middleware = super(ViewMetaclass, cls).__new__(cls, clsname, bases, dct)
+        cls._middleware.append(middleware)
+        return middleware
+
+
 class ViewMetaclass(type):
-    _routes = {}
-    _alias = {}
+    _routes = dict()
+    _alias = dict()
 
     def __new__(cls, clsname, bases, dct):
         def process_path(path: str):
@@ -19,20 +28,18 @@ class ViewMetaclass(type):
         if path := dct.get("route"):
             if isinstance(path, str):
                 path = process_path(path)
-                cls._routes[path] = super(ViewMetaclass, cls).__new__(
-                    cls, clsname, bases, dct
+                cls._routes[path], cls._alias[clsname] = (
+                    super(ViewMetaclass, cls).__new__(cls, clsname, bases, dct),
+                    path,
                 )
-                cls._alias[clsname] = path
-                dct["route"] = path
                 return
             elif isinstance(path, list):
                 for el in path:
                     el = process_path(el)
-                    cls._routes[el] = super(ViewMetaclass, cls).__new__(
-                        cls, clsname, bases, dct
+                    cls._routes[el], cls._alias[clsname] = (
+                        super(ViewMetaclass, cls).__new__(cls, clsname, bases, dct),
+                        el,
                     )
-                    cls._alias[clsname] = el
-                dct["route"] = path
                 return
         return super(ViewMetaclass, cls).__new__(cls, clsname, bases, dct)
 
@@ -57,7 +64,12 @@ class HttpQuery:
 
 
 def render(
-    template_name: str, request: dict, context: dict = {}, templates="templates", *args, **kwargs
+    template_name: str,
+    request: dict,
+    context: dict = {},
+    templates="templates",
+    *args,
+    **kwargs,
 ) -> str:
     env = Environment()
     env.loader = FileSystemLoader(templates)

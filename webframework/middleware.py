@@ -1,10 +1,10 @@
 from typing import Union
 from urllib.parse import parse_qsl
 
-from .tools import HttpQuery
+from .tools import HttpQuery, MiddlewareMetaclass
 
 
-class BaseMiddleware:
+class BaseMiddleware(metaclass=MiddlewareMetaclass):
     """Base Middleware"""
 
 
